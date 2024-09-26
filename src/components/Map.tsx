@@ -13,7 +13,7 @@ interface Location {
   name: string;
   lat: number;
   lng: number;
-  type: 'hostel' | 'bank' | 'faculty' | 'chapel' | 'gate' | 'medical center' | 'others';
+  type: 'hostel' | 'bank' | 'faculty' | 'chapel' | 'gate' | 'medical_center' | 'others';
 }
 
 // Define the props for the component
@@ -35,7 +35,7 @@ const getLocationImage = (type: string) => {
       return churchImage;
     case 'gate':
       return gateImage;
-    case 'medical center':
+    case 'medical_center':
       return hospitalImage;
     default:
       return buildingImage; // For other locations
