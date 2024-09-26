@@ -1,6 +1,8 @@
 import React from 'react';
-import ReactFlow, { Controls, Edge} from 'reactflow';
+import ReactFlow, { Controls, Edge, Node } from 'reactflow';
 import 'reactflow/dist/style.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons'; // FontAwesome pin icon
 
 // Define the Location type
 interface Location {
@@ -11,22 +13,21 @@ interface Location {
 }
 
 // Define the props for the component
-interface Map{
+interface MapProps {
   locations: Location[];
   selectedPath: string[];
 }
 
 // Custom edge component for animation
-const AnimatedEdge: React.FC<{ id: string; sourceX: number; sourceY: number; targetX: number; targetY: number; style?: React.CSSProperties }> = ({
-  id,
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
-  style,
-}) => {
+const AnimatedEdge: React.FC<{
+  id: string;
+  sourceX: number;
+  sourceY: number;
+  targetX: number;
+  targetY: number;
+  style?: React.CSSProperties;
+}> = ({ id, sourceX, sourceY, targetX, targetY, style }) => {
   const length = Math.sqrt((targetX - sourceX) ** 2 + (targetY - sourceY) ** 2);
-
 
   return (
     <line
@@ -56,13 +57,23 @@ const AnimatedEdge: React.FC<{ id: string; sourceX: number; sourceY: number; tar
   );
 };
 
+// Custom Node Component for rendering location with a pin icon
+const CustomLocationNode: React.FC<{ data: { label: string } }> = ({ data }) => {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+      <FontAwesomeIcon icon={faMapMarkerAlt} style={{ color: 'red', fontSize: '24px' }} />
+      <div style={{ fontSize: '12px', marginTop: '4px' }}>{data.label}</div>
+    </div>
+  );
+};
 
-const Map: React.FC<Map> = ({ locations, selectedPath }) => {
+const Map: React.FC<MapProps> = ({ locations, selectedPath }) => {
   // Transform locations into nodes for React Flow
-  const nodes = locations.map((location) => ({
+  const nodes: Node[] = locations.map((location) => ({
     id: location.name,
     data: { label: location.name },
     position: { x: location.lat, y: location.lng },
+    type: 'locationNode', // Set the custom node type
   }));
 
   // Create edges based on selectedPath
@@ -79,6 +90,9 @@ const Map: React.FC<Map> = ({ locations, selectedPath }) => {
       return null;
     })
     .filter((edge): edge is Edge => edge !== null); // Type guard to filter null values
+
+  // Define nodeTypes with the custom location node
+  const nodeTypes = { locationNode: CustomLocationNode };
 
   return (
     <div style={{ height: '500px', width: '100%' }}>
@@ -104,7 +118,7 @@ const Map: React.FC<Map> = ({ locations, selectedPath }) => {
           );
         })}
       </svg>
-      <ReactFlow nodes={nodes} edges={edges} style={{ background: '#fafafa' }}>
+      <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} style={{ background: '#fafafa' }}>
         <Controls />
       </ReactFlow>
     </div>

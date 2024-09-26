@@ -47,11 +47,7 @@ const dijkstra = (graph: Record<string, Record<string, number>>, start: string, 
 const App: React.FC = () => {
   const [selectedPath, setSelectedPath] = useState<string[]>([]);
 
-  // const locations: Location[] = [
-  //   { name: 'Jaja Hostel', lat: 100, lng: 200, type: 'hostel' },
-  //   { name: 'Mariere Hostel', lat: 50, lng: 20, type: 'hostel' },
-  //   { name: 'Moremi Hostel', lat: 600, lng: 300, type: 'hostel' },
-  // ];
+
 
   const locations: Location[] = [
     // Top Row
