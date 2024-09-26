@@ -1,4 +1,6 @@
 import React from 'react';
+import logo from '../assets/unilag-logo.jpg'
+
 
 interface LocationFormProps {
   locations: string[];
@@ -15,27 +17,24 @@ const Locationform: React.FC<LocationFormProps> = ({ locations, onGetDirections 
   };
 
   return (
-<div className="app-logo">   
-      {/* Single parent container */}
-      {/* Header Section */}
-      <header className="app-header">
-        <div className="header-left">
-          <img 
-            src={"src/assets/WhatsApp Image 2024-09-24 at 23.49.07_693ff67c.jpg"} 
-            alt="Unilag Logo" 
-            style={{ width: '50px', height: '50px' }}
-            className="header-logo"
-          />
-          <h1>Unilag Locator</h1>
-        </div>
-      </header>
-<br></br><br></br>
-
-      {/* Form Section */}
-      <form onSubmit={handleSubmit}>
-  <div>
-  <label>Where are you you?</label>
-          <select value={currentLocation} onChange={(e) => setCurrentLocation(e.target.value)}>
+    <div className="flex flex-col items-center px-8 justify-center pt-8"> {/* Added pt-4 to reduce top space */}
+      <div className="flex items-center justify-center w-full mb-4"> {/* Added mb-4 for spacing below the logo */}
+        <img 
+          src={logo} 
+          alt="Unilag Logo" 
+          className="w-18 h-12 md:h-16" // Responsive size for the logo
+        />
+        <h1 className="ml-4 text-xl md:text-2xl font-semibold text-center">Unilag Explorer</h1>
+      </div>
+      
+      <form onSubmit={handleSubmit} className="flex flex-col w-full space-y-6 md:space-y-0 md:flex-row md:space-x-4"> {/* Adjusted spacing */}
+        <div className="flex flex-col w-full"> {/* Added md:w-1/2 for width on larger screens */}
+          <label className="text-sm md:text-base font-medium">Where are you?</label>
+          <select 
+            value={currentLocation} 
+            onChange={(e) => setCurrentLocation(e.target.value)}
+            className="mt-1 p-2 border rounded-md w-full" // Responsive form field
+          >
             <option value="">Enter your location</option>
             {locations.map((loc) => (
               <option key={loc} value={loc}>
@@ -43,13 +42,15 @@ const Locationform: React.FC<LocationFormProps> = ({ locations, onGetDirections 
               </option>
             ))}
           </select>
-  </div>
-  <br></br>
-
-
-        <div>
-          <label>Where are you going?</label>
-          <select value={destination} onChange={(e) => setDestination(e.target.value)}>
+        </div>
+  
+        <div className="flex flex-col w-full"> {/* Added md:w-1/2 for width on larger screens */}
+          <label className="text-sm md:text-base font-medium">Where are you going?</label>
+          <select 
+            value={destination} 
+            onChange={(e) => setDestination(e.target.value)}
+            className="mt-1 p-2 border rounded-md w-full" // Responsive form field
+          >
             <option value="">Select your destination</option>
             {locations.map((loc) => (
               <option key={loc} value={loc}>
@@ -58,12 +59,21 @@ const Locationform: React.FC<LocationFormProps> = ({ locations, onGetDirections 
             ))}
           </select>
         </div>
-        <br/><br/>
-
-        <button id='btn' type="submit">Get Directions</button>
+  
+        
       </form>
-    </div> // Closing the single parent div
+
+      <button 
+          id="btn" 
+          type="submit" 
+          className="w-full px-4 py-2 my-8 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700"
+        >
+          Get Directions
+        </button>
+    </div>
   );
+  
+
 };
 
 export default Locationform;
