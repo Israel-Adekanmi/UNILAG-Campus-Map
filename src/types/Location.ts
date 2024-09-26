@@ -5,7 +5,6 @@ import churchImage from '../assets/church.jpeg';
 import gateImage from '../assets/gate.png';
 import hospitalImage from '../assets/hospital.avif';
 import buildingImage from '../assets/building.jpg';
-import React from 'react';
 
 export interface Location {
   name: string;
