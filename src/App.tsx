@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Map from './components/Map';
 import Locationform from './components/Locationform';
-import { unilaglocations, Location } from './types/Location';
+import { unilaglocations } from './types/Location';
 import "./App.css";
 
 // Dijkstra's Algorithm logic here or import from utils file

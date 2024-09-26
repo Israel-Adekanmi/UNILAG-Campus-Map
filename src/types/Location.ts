@@ -5,6 +5,7 @@ import churchImage from '../assets/church.jpeg';
 import gateImage from '../assets/gate.png';
 import hospitalImage from '../assets/hospital.avif';
 import buildingImage from '../assets/building.jpg';
+import React from 'react';
 
 export interface Location {
   name: string;
@@ -111,3 +112,6 @@ export const unilaglocations: Location[] = [
   { name: 'Femi Gbaj Hostel', lat: 750, lng: 800, type: 'hostel' },
   { name: 'Elkanemi Hostel', lat: 1000, lng: 800, type: 'hostel' },
 ];
+
+
+

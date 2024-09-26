@@ -4,6 +4,7 @@ import "reactflow/dist/style.css"; // FontAwesome pin icon
 import PopUp from "./Pop-up";
 import { getLocationImage, MapLocation } from "../types/Location";
 import AddDelete from "./AddDelete";
+import AnimatedEdge from "../types/edge";
 
 interface Location {
   name: string;
@@ -36,12 +37,12 @@ const Map: React.FC<MapProps> = ({ locations, selectedPath }) => {
     setPopUp(true);
   };
 
-  const handleNodeClick = (node: Node) => {
-    const location = locationsState.find((loc) => loc.name === node.id);
-    if (location) {
-      handleLocationClick(location);
-    }
-  };
+  // const handleNodeClick = (node: Node) => {
+  //   const location = locationsState.find((loc) => loc.name === node.id);
+  //   if (location) {
+  //     handleLocationClick(location);
+  //   }
+  // };
 
   const CustomLocationNode: React.FC<{ data: { label: string; type: string } }> = ({ data }) => {
     return (
