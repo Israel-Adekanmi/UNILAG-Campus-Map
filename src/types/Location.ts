@@ -112,5 +112,62 @@ export const unilaglocations: Location[] = [
   { name: 'Elkanemi Hostel', lat: 1000, lng: 800, type: 'hostel' },
 ];
 
+function calculateDistance(loc1: Location, loc2: Location): number {
+  const dx = loc1.lat - loc2.lat;
+  const dy = loc1.lng - loc2.lng;
+  return Math.sqrt(dx * dx + dy * dy); // Euclidean distance
+}
 
+export function buildGraph(locations: Location[]): Record<string, { name: string; distance: number }[]> {
+  const graph: Record<string, { name: string; distance: number }[]> = {};
+  for (const loc of locations) {
+      graph[loc.name] = locations
+          .filter(otherLoc => otherLoc.name !== loc.name)
+          .map(otherLoc => ({
+              name: otherLoc.name,
+              distance: calculateDistance(loc, otherLoc),
+          }))
+          .sort((a, b) => a.distance - b.distance); // Sort by distance
+  }
+  return graph;
+}
+
+export function dijkstra(graph: Record<string, { name: string; distance: number }[]>, start: string, end: string): string[] {
+  const distances: Record<string, number> = {};
+  const previous: Record<string, string | null> = {};
+  const queue: Set<string> = new Set(Object.keys(graph));
+
+  for (const node of queue) {
+      distances[node] = Infinity; // Set initial distances to infinity
+      previous[node] = null; // Previous node is unknown initially
+  }
+
+  distances[start] = 0; // Distance from start to itself is 0
+
+  while (queue.size) {
+      const currentNode = Array.from(queue).reduce((minNode, node) => (distances[node] < distances[minNode] ? node : minNode), Array.from(queue)[0]);
+
+      if (distances[currentNode] === Infinity) break; // All remaining nodes are inaccessible
+
+      queue.delete(currentNode);
+
+      for (const neighbor of graph[currentNode]) {
+          const alt = distances[currentNode] + neighbor.distance;
+          if (alt < distances[neighbor.name]) {
+              distances[neighbor.name] = alt;
+              previous[neighbor.name] = currentNode;
+          }
+      }
+  }
+
+  // Reconstruct the path
+  const path: string[] = [];
+  let currNode: string | null = end;
+  while (currNode) {
+      path.unshift(currNode);
+      currNode = previous[currNode];
+  }
+  console.log("Current Path:", path);
+  return path;
+}
 

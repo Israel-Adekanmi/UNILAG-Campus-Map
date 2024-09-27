@@ -5,75 +5,119 @@ import Locationform from './components/Locationform';
 import { unilaglocations } from './types/Location';
 import "./App.css";
 
-// Dijkstra's Algorithm logic here or import from utils file
-const dijkstra = (graph: Record<string, Record<string, number>>, start: string, target: string) => {
-  const distances: Record<string, number> = {};
-  const previous: Record<string, string | null> = {};
-  const queue = new Set(Object.keys(graph));
-
-  Object.keys(graph).forEach((location) => {
-    distances[location] = Infinity;
-    previous[location] = null;
-  });
-  distances[start] = 0;
-
-  while (queue.size) {
-    let closest = [...queue].reduce((min, loc) => (distances[loc] < distances[min] ? loc : min), [...queue][0]);
-
-    if (closest === target) break;
-
-    queue.delete(closest);
-
-    for (let neighbor in graph[closest]) {
-      let alt = distances[closest] + graph[closest][neighbor];
-      if (alt < distances[neighbor]) {
-        distances[neighbor] = alt;
-        previous[neighbor] = closest;
-      }
-    }
-  }
-
-  let path: string[] = [];
-  let at: string | null = target;
-  
-  while (at !== null) {
-    path.push(at);
-    at = previous[at] || null; 
-  }
-  
-  return path.reverse();
+// Graph type definition
+const graph: Record<string, Record<string, number>> = {
+  'Faculty of Law': { 'Love Garden': 2, 'Faculty Of Mgt Sci': 4 },
+  'Senate Building': { 'Faculty of Engineering': 5, 'Ecobank': 1, 'Faculty Of Mgt Sci': 3, 'Unilag Main Library': 4 },
+  'Love Garden': { 'Faculty of Law': 2, 'Faculty Of Mgt Sci': 3 },
+  'Faculty Of Mgt Sci': { 'Faculty of Law': 4, 'Love Garden': 3, 'Senate Building': 3, 'Unilag Main Library': 2 },
+  'Ecobank': { 'Senate Building': 1, 'Faculty of Mass Com': 4, 'Faculty of Art': 4 },
+  'Faculty of Engineering': { 'Lagoon Front': 2, 'Senate Building': 5 },
+  'Unilag Main Library': { 'Senate Building': 4, 'Faculty Of Mgt Sci': 2, 'Lagoon Front': 5 },
+  'Lagoon Front': { 'Faculty of Engineering': 2, 'Unilag Main Library': 5 },
+  'Faculty of Art': { 'Faculty of Law': 2, 'Ecobank': 4 },
+  'Mariere Hostel': { 'Faculty of Engineering': 4, 'GT Bank': 2 },
+  'GT Bank': { 'Mariere Hostel': 2, 'Zenith Bank': 2, 'Moremi Hostel': 2 },
+  'Zenith Bank': { 'GT Bank': 2, 'Jaja Hostel': 1, 'Moremi Hostel': 2 },
+  'Jaja Hostel': { 'Zenith Bank': 1, 'Faculty of Science': 3, 'Unilag Medical Center': 5 },
+  'Faculty of Science': { 'Jaja Hostel': 3, 'Zenith Bank': 3 },
+  'Faculty of Mass Com': { 'Moremi Hostel': 4, 'CITS': 3, 'Ecobank': 4 },
+  'Moremi Hostel': { 'GT Bank': 2, 'Zenith Bank': 2, 'Faculty of Mass Com': 4, 'Unilag Medical Center': 3, 'Scholar Suite': 5 },
+  'Unilag Medical Center': { 'Moremi Hostel': 3, 'Jaja Hostel': 5, 'Scholar Suite': 2 },
+  'Scholar Suite': { 'Honours Hostel': 3, 'Unilag Medical Center': 2 },
+  'CITS': { 'Faculty of Mass Com': 3, 'Eni Njoku Hostel': 4, 'New Hall': 2 },
+  'Eni Njoku Hostel': { 'CITS': 4, 'Sodeinde Hostel': 3, 'Makama Hostel': 4 },
+  'Sodeinde Hostel': { 'Eni Njoku Hostel': 3, 'Makama Hostel': 3 },
+  'Makama Hostel': { 'Sodeinde Hostel': 3, 'New Hall': 2, 'Unilag Chapel': 4 },
+  'New Hall': { 'Makama Hostel': 2, 'Access Bank': 1 },
+  'Access Bank': { 'New Hall': 1, 'Unilag DLI': 5, 'New Hall Filling Station': 1 },
+  'New Hall Filling Station': { 'Access Bank': 1, 'Unilag DLI': 5, 'Nithub Unilag': 3, 'Amphitheater': 1 },
+  'Unilag DLI': { 'Honours Hostel': 3, 'Access Bank': 5, 'Women Society Hostel': 3, 'First Bank': 2, 'ISL Unilag': 4 },
+  'First Bank': { 'Unilag DLI': 2, 'Unilag Second Gate': 6 },
+  'Nithub Unilag': { 'New Hall Filling Station': 3, 'Faculty of Social Science': 3 },
+  'Faculty of Social Science': { 'Unilag DLI': 3, 'Nithub Unilag': 3 },
+  'Unilag Sport Center': { 'Wema Bank': 3, 'Amphitheater': 1 },
+  'Amphitheater': { 'Unilag Sport Center': 1, 'Unilag Chapel': 3, 'New Hall Filling Station': 1 },
+  'Unilag Chapel': { 'Faculty of Environmental Science': 5, 'Amphitheater': 3, 'Makama Hostel': 4 },
+  'Faculty of Environmental Science': { 'Unilag Gate': 5, 'Wema Bank': 4, 'Unilag Chapel': 5 },
+  'Wema Bank': { 'Faculty of Environmental Science': 4, 'Unilag Sport Center': 3 },
+  'Biobaku Hostel': { 'Kofo Hostel': 3 },
+  'Faculty of Education': { 'Femi Gbaj Hostel': 3, 'Unilag Gate': 4, 'Education Garden': 6 },
+  'Education Garden': { 'Faculty of Education': 6, 'Kofo Hostel': 3 },
+  'Kofo Hostel': { 'Education Garden': 3, 'Amina Hostel': 2, 'Biobaku Hostel': 3 },
+  'Amina Hostel': { 'Kofo Hostel': 2 },
+  'Unilag Gate': { 'Faculty of Education': 4, 'Faculty of Environmental Science': 5 },
+  'Femi Gbaj Hostel': { 'Elkanemi Hostel': 3, 'Faculty of Education': 3 },
+  'Elkanemi Hostel': { 'Femi Gbaj Hostel': 3 },
+  'ISL Unilag': { 'Unilag DLI': 4, 'Unilag Second Gate': 6 },
+  'Unilag Second Gate': { 'ISL Unilag': 6, 'First Bank': 6 },
+  'Honours Hostel': { 'Scholar Suite': 3, 'Unilag DLI': 3 },
 };
 
 const App: React.FC = () => {
-  const [selectedPath, setSelectedPath] = useState<string[]>([]);
-  
+  const [route, setRoute] = useState<{ path: string[]; distance: number }>({ path: [], distance: 0 });
 
-  const graph = {
-    'Jaja Hostel': { 'Mariere Hostel': 10, 'Moremi Hostel': 15 },
-    'Mariere Hostel': { 'Jaja Hostel': 10, 'Moremi Hostel': 5 },
-    'Moremi Hostel': { 'Jaja Hostel': 15, 'Mariere Hostel': 5 },
+  const dijkstra = (start: string, end: string) => {
+    const distances: Record<string, number> = {};
+    const previous: Record<string, string | null> = {};
+    const queue: { node: string; priority: number }[] = [];
+
+    for (const node in graph) {
+      distances[node] = Infinity;
+      previous[node] = null;
+    }
+    distances[start] = 0;
+    queue.push({ node: start, priority: 0 });
+
+    while (queue.length) {
+      queue.sort((a, b) => a.priority - b.priority);
+      const { node: currentNode } = queue.shift()!;
+
+      if (currentNode === end) {
+        const path = [];
+        let temp: string | null = end;
+        while (temp) {
+          path.push(temp);
+          temp = previous[temp];
+        }
+        return { path: path.reverse(), distance: distances[end] };
+      }
+
+      for (const neighbor in graph[currentNode]) {
+        const alt = distances[currentNode] + graph[currentNode][neighbor];
+        if (alt < distances[neighbor]) {
+          distances[neighbor] = alt;
+          previous[neighbor] = currentNode;
+          queue.push({ node: neighbor, priority: alt });
+        }
+      }
+    }
+
+    return { path: [], distance: Infinity };
   };
 
-  const handleGetDirections = (from: string, to: string) => {
-    const path = dijkstra(graph, from, to);
-    setSelectedPath(path); // set path to show on the map
+  const handleFormSubmit = (current: string, destination: string) => {
+    const result = dijkstra(current, destination);
+    setRoute(result);
   };
 
   return (
     <div className="flex flex-col items-center justify-center w-full">
-    <div className="w-full">
-      {/* Location form section */}
-      <Locationform
-        locations={unilaglocations.map((loc) => loc.name)}
-        onGetDirections={handleGetDirections}
-      />
-    </div>
+      <div className="w-full">
+        {/* Location form section */}
+        <Locationform
+          locations={unilaglocations.map((loc) => loc.name)}
+          onSubmit={handleFormSubmit}
+        />
+      </div>
 
-    <div className="w-full">
-      {/* Map section */}
-      <Map locations={unilaglocations} selectedPath={selectedPath} />
+      <div className="w-full">
+        {/* Conditionally render Map */}
+        {route.path.length > 0 && (
+          <Map locations={unilaglocations} selectedPath={route.path} path={route.path} distance={route.distance} />
+        )}
+      </div>
     </div>
-  </div>
   );
 };
 
