@@ -5,7 +5,7 @@ interface NewLocation {
   name: string;
   lat: number;
   lng: number;
-  type: 'hostel' | 'bank' | 'faculty' | 'chapel' | 'gate' | 'medical_center' | 'others';
+  type: 'hostel' | 'bank' | 'faculty' | 'chapel' | 'gate' | 'medical_center' | 'bus_stop' | 'others';
 }
 
 interface LocationFormProps {
