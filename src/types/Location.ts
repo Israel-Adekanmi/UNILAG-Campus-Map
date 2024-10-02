@@ -50,10 +50,10 @@ export const unilaglocations: Location[] = [
   { name: 'Senate Building', lat: 380, lng: 140, type: 'others' },
   { name: 'Love Garden', lat: 245, lng: 263, type: 'others' },
   { name: 'Faculty Of Mgt Sci', lat: 195, lng: 160, type: 'faculty' },
-  { name: 'Ecobank', lat: 420, lng: 220, type: 'bank' },
-  { name: 'Faculty of Engineering', lat: 1150, lng: 60, type: 'faculty' },
+  { name: 'Ecobank', lat: 420, lng: 393, type: 'bank' },
+  { name: 'Faculty of Engineering', lat: 1000, lng: 60, type: 'faculty' },
   { name: 'Unilag Main Library', lat: 245, lng: 60, type: 'others' },
-  { name: 'Lagoon Front', lat: 1000, lng: 10, type: 'others' },
+  { name: 'Lagoon Front', lat: 800, lng: 6, type: 'others' },
 
   { name: 'Faculty of Art', lat: 200, lng: 383, type: 'faculty' },
   { name: 'Mariere Hostel', lat: 1050, lng: 300, type: 'hostel' },
