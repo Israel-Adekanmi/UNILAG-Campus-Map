@@ -1,15 +1,27 @@
 import React, { useState, useMemo, useEffect } from "react";
-import ReactFlow, { Controls, Edge, Node } from "reactflow";
+import ReactFlow, { Controls, Edge, MarkerType, Node } from "reactflow";
 import "reactflow/dist/style.css"; // FontAwesome pin icon
 import PopUp from "./Pop-up";
-import { getLocationImage, MapLocation, unilaglocations } from "../types/Location";
+import {
+  getLocationImage,
+  MapLocation,
+  unilaglocations,
+} from "../types/Location";
 import AddDelete from "./AddDelete";
 
 interface Location {
   name: string;
   lat: number;
   lng: number;
-  type: "hostel" | "bank" | "faculty" | "chapel" | "gate" | "medical_center" | "others";
+  type:
+    | "hostel"
+    | "bank"
+    | "faculty"
+    | "chapel"
+    | "gate"
+    | "medical_center"
+    | "bus_stop"
+    | "others";
 }
 
 // Define the props for the component
@@ -21,7 +33,9 @@ interface MapProps {
 }
 
 // CustomLocationNode component defined outside of the Map component
-const CustomLocationNode: React.FC<{ data: { label: string; type: string } }> = ({ data }) => {
+const CustomLocationNode: React.FC<{
+  data: { label: string; type: string };
+}> = ({ data }) => {
   return (
     <div className="flex flex-col items-center cursor-pointer">
       <img
@@ -36,10 +50,24 @@ const CustomLocationNode: React.FC<{ data: { label: string; type: string } }> = 
   );
 };
 
-const Map: React.FC<MapProps> = ({ locations, selectedPath, path, distance }) => {
-  console.log("Selected Path:", selectedPath);
+// Utility function to calculate distance between two points
+const calculateDistance = (
+  pos1: { x: number; y: number },
+  pos2: { x: number; y: number }
+) => {
+  return Math.sqrt(Math.pow(pos2.x - pos1.x, 2) + Math.pow(pos2.y - pos1.y, 2));
+};
+
+const Map: React.FC<MapProps> = ({
+  locations,
+  selectedPath,
+  path,
+  distance,
+}) => {
   const [isPopupOpen, setPopUp] = useState<boolean>(false);
-  const [selectedLocation, setSelectedLocation] = useState<MapLocation | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<MapLocation | null>(
+    null
+  );
   const [newLocation, setNewLocation] = useState<Location>({
     name: "",
     lat: 0,
@@ -50,13 +78,10 @@ const Map: React.FC<MapProps> = ({ locations, selectedPath, path, distance }) =>
   const [locationsState, setLocationsState] = useState<Location[]>(locations);
   const [locationToDelete, setLocationToDelete] = useState<string>("");
 
-
   useEffect(() => {
-    // Ensure the map renders on page load
     setLocationsState(locations);
   }, [locations]);
 
-  
   const handleLocationClick = (location: MapLocation) => {
     setSelectedLocation(location);
     setPopUp(true);
@@ -71,7 +96,9 @@ const Map: React.FC<MapProps> = ({ locations, selectedPath, path, distance }) =>
   };
 
   const deleteLocation = () => {
-    setLocationsState((prev) => prev.filter((location) => location.name !== locationToDelete));
+    setLocationsState((prev) =>
+      prev.filter((location) => location.name !== locationToDelete)
+    );
     setLocationToDelete("");
   };
 
@@ -82,64 +109,66 @@ const Map: React.FC<MapProps> = ({ locations, selectedPath, path, distance }) =>
     type: "locationNode",
   }));
 
-  const renderLines = () => {
-    const lines = [];
-    for (let i = 0; i < selectedPath.length - 1; i++) {
-      const sourceNode = nodes.find((node) => node.id === selectedPath[i]);
-      const targetNode = nodes.find((node) => node.id === selectedPath[i + 1]);
-  
-      if (sourceNode && targetNode) {
-        const { x: x1, y: y1 } = sourceNode.position;
-        const { x: x2, y: y2 } = targetNode.position;
-  
-        console.log(`Source: (${x1}, ${y1}), Target: (${x2}, ${y2})`);
-  
-        lines.push(
-          <line
-            key={`${sourceNode.id}-${targetNode.id}`}
-            x1={x1}
-            y1={y1}
-            x2={x2}
-            y2={y2}
-            stroke="#000"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeDasharray="5,5" // Dashed line (optional)
-          />
-        );
-      }
-    }
-    return lines;
-  };
-  
+  const edges: Edge[] = selectedPath
+    .flatMap((locationId, index) => {
+      const sourceNode = nodes.find((node) => node.id === locationId);
+      // Check if there is a next node
+      const nextIndex = index + 1;
+      const targetNode =
+        nextIndex < selectedPath.length
+          ? nodes.find((node) => node.id === selectedPath[nextIndex])
+          : null; // Set to null if next index is out of bounds
 
-  const edges: Edge[] = selectedPath.flatMap((locationId, index) => {
-    if (index < selectedPath.length - 1) {
+      // Log errors if source or target nodes are not found
+      if (!sourceNode) {
+        console.error(`Source node not found for ID: ${locationId}`);
+        return []; // Skip this iteration
+      }
+
+      if (!targetNode) {
+        console.log(
+          `No target node for ID: ${locationId}. Skipping edge creation.`
+        );
+        return []; // Skip edge creation if target is not found
+      }
+
+      const distance = calculateDistance(
+        { x: sourceNode.position.x, y: sourceNode.position.y },
+        { x: targetNode.position.x, y: targetNode.position.y }
+      );
+
       return {
-        id: `e${locationId}-${selectedPath[index + 1]}`,
-        source: locationId,
-        target: selectedPath[index + 1],
-        label: "Distance",
-        type: "default", // Add a type if necessary
-        animated: true, // or false based on your requirement
-        style: { stroke: '#000' }, // Add style if needed
-      } as Edge; // Type assertion to Edge
-    }
-    return []; // Return an empty array instead of null
-  });
+        id: `e${sourceNode.id}-${targetNode.id}`,
+        source: sourceNode.id,
+        target: targetNode.id,
+        type: "default",
+        animated: true,
+        label: `${distance.toFixed(2)} meters`,
+        style: { stroke: "#000", strokeWidth: 2 },
+        markerEnd: { type: MarkerType.ArrowClosed },
+      };
+    })
+    .filter((edge) => edge.target);
+
+  console.log("Edges:", edges);
 
   // Memoizing nodeTypes
-  const nodeTypes = useMemo(() => ({
-    locationNode: CustomLocationNode,
-  }), []);
+  const nodeTypes = useMemo(
+    () => ({
+      locationNode: CustomLocationNode,
+    }),
+    []
+  );
 
   return (
-    <div className="flex flex-col w-full h-[1000px] md:h-[1900px] lg:h-[1000px]"> {/* Increased height */}
+    <div className="flex flex-col w-full h-[1000px] md:h-[1900px] lg:h-[1000px]">
       <div className="relative flex-1">
         <ReactFlow
           nodes={nodes}
           edges={edges}
           nodeTypes={nodeTypes}
+          fitView
+          fitViewOptions={{ padding: 0.2 }}
           style={{ background: "#fafafa" }}
           className="w-full h-full"
           onNodeClick={(_, node) => {
@@ -150,43 +179,23 @@ const Map: React.FC<MapProps> = ({ locations, selectedPath, path, distance }) =>
           }}
         >
           <Controls />
-
-          <svg
-  style={{
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    zIndex: 1, // Ensure this is above the ReactFlow component
-    pointerEvents: "none", // Allow clicks to pass through
-  }}
->
-  {renderLines()}
-  </svg>
-  
         </ReactFlow>
-
-       
 
         {isPopupOpen && selectedLocation && (
           <PopUp location={selectedLocation} onClose={() => setPopUp(false)} />
         )}
       </div>
-
       <div>
         <h2>Fastest Route:</h2>
         {path.length > 0 ? (
           <>
-            <p>Path: {path.join(' -> ')}</p>
-            <p>Total Distance: {distance}</p>
+            <p>Path: {path.join(" -> ")}</p>
+            <p>Total Distance: {distance} meters</p>
           </>
         ) : (
           <p>No path found.</p>
         )}
       </div>
-
-      {/* AddDelete component below the map */}
       <AddDelete
         newLocation={newLocation}
         setNewLocation={setNewLocation}
