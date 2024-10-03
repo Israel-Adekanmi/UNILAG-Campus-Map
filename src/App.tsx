@@ -122,7 +122,7 @@ const App: React.FC = () => {
       <div className="w-full">
         {/* Conditionally render Map */}
         {route.path.length > 0 && (
-          <Map locations={unilaglocations} selectedPath={route.path} path={route.path} distance={route.distance} />
+          <Map locations={unilaglocations} selectedPath={route.path} path={route.path} />
         )}
       </div>
       <footer className="w-full bg-blue-900 text-white py-4">

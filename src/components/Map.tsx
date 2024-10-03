@@ -35,7 +35,6 @@ interface MapProps {
   locations: typeof unilaglocations;
   selectedPath: string[];
   path: string[];
-  distance: number;
 }
 
 // CustomLocationNode component defined outside of the Map component
@@ -81,7 +80,6 @@ const Map: React.FC<MapProps> = ({
   locations,
   selectedPath,
   path,
-  distance,
 }) => {
   const [isPopupOpen, setPopUp] = useState<boolean>(false);
   const [selectedLocation, setSelectedLocation] = useState<MapLocation | null>(
