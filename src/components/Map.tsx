@@ -1,5 +1,11 @@
 import React, { useState, useMemo, useEffect } from "react";
-import ReactFlow, { Controls, Edge, MarkerType, Node } from "reactflow";
+import ReactFlow, {
+  Controls,
+  Edge,
+  MarkerType,
+  Node,
+  ConnectionMode,
+} from "reactflow";
 import "reactflow/dist/style.css"; // FontAwesome pin icon
 import PopUp from "./Pop-up";
 import {
@@ -33,6 +39,8 @@ interface MapProps {
 }
 
 // CustomLocationNode component defined outside of the Map component
+import { Handle, Position } from "reactflow";
+
 const CustomLocationNode: React.FC<{
   data: { label: string; type: string };
 }> = ({ data }) => {
@@ -46,6 +54,17 @@ const CustomLocationNode: React.FC<{
       <div className="text-lg mt-2 max-w-40 break-words text-center">
         {data.label}
       </div>
+
+      {/* Define handles on each side of the node */}
+      <Handle type="source" position={Position.Top} id="top" />
+      <Handle type="source" position={Position.Bottom} id="bottom" />
+      <Handle type="source" position={Position.Left} id="left" />
+      <Handle type="source" position={Position.Right} id="right" />
+
+      <Handle type="target" position={Position.Top} id="top" />
+      <Handle type="target" position={Position.Bottom} id="bottom" />
+      <Handle type="target" position={Position.Left} id="left" />
+      <Handle type="target" position={Position.Right} id="right" />
     </div>
   );
 };
@@ -112,25 +131,13 @@ const Map: React.FC<MapProps> = ({
   const edges: Edge[] = selectedPath
     .flatMap((locationId, index) => {
       const sourceNode = nodes.find((node) => node.id === locationId);
-      // Check if there is a next node
       const nextIndex = index + 1;
       const targetNode =
         nextIndex < selectedPath.length
           ? nodes.find((node) => node.id === selectedPath[nextIndex])
-          : null; // Set to null if next index is out of bounds
+          : null;
 
-      // Log errors if source or target nodes are not found
-      if (!sourceNode) {
-        console.error(`Source node not found for ID: ${locationId}`);
-        return []; // Skip this iteration
-      }
-
-      if (!targetNode) {
-        console.log(
-          `No target node for ID: ${locationId}. Skipping edge creation.`
-        );
-        return []; // Skip edge creation if target is not found
-      }
+      if (!sourceNode || !targetNode) return [];
 
       const distance = calculateDistance(
         { x: sourceNode.position.x, y: sourceNode.position.y },
@@ -141,10 +148,12 @@ const Map: React.FC<MapProps> = ({
         id: `e${sourceNode.id}-${targetNode.id}`,
         source: sourceNode.id,
         target: targetNode.id,
+        sourceHandle: "bottom", // Specify the source handle
+        targetHandle: "top", // Specify the target handle
         type: "default",
         animated: true,
         label: `${distance.toFixed(2)} meters`,
-        style: { stroke: "#000", strokeWidth: 2 },
+        style: { stroke: "#000", strokeWidth: 4 },
         markerEnd: { type: MarkerType.ArrowClosed },
       };
     })
@@ -161,40 +170,63 @@ const Map: React.FC<MapProps> = ({
   );
 
   return (
-    <div className="flex flex-col w-full h-[1000px] md:h-[1900px] lg:h-[1000px]">
-      <div className="relative flex-1">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={nodeTypes}
-          fitView
-          fitViewOptions={{ padding: 0.2 }}
-          style={{ background: "#fafafa" }}
-          className="w-full h-full"
-          onNodeClick={(_, node) => {
-            const location = locationsState.find((loc) => loc.name === node.id);
-            if (location) {
-              handleLocationClick(location);
-            }
-          }}
-        >
-          <Controls />
-        </ReactFlow>
+    <div className="mt-12 flex flex-col items-center w-full px-4">
+      <div className="flex flex-col lg:flex-row w-full mx-auto">
+        <div className="flex-1 w-full lg:w-[1000px] mr-4 lg:mb-0 mb-6">
+          <div className="relative h-96 md:h-[700px]">
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              nodeTypes={nodeTypes}
+              fitView
+              fitViewOptions={{ padding: 0.2 }}
+              style={{ background: "#fafafa" }}
+              className="w-full h-full rounded-3xl"
+              connectionMode={ConnectionMode.Strict}
+              onNodeClick={(_, node) => {
+                const location = locationsState.find(
+                  (loc) => loc.name === node.id
+                );
+                if (location) {
+                  handleLocationClick(location);
+                }
+              }}
+            >
+              <Controls />
+            </ReactFlow>
 
-        {isPopupOpen && selectedLocation && (
-          <PopUp location={selectedLocation} onClose={() => setPopUp(false)} />
-        )}
-      </div>
-      <div>
-        <h2>Fastest Route:</h2>
-        {path.length > 0 ? (
-          <>
-            <p>Path: {path.join(" -> ")}</p>
-            <p>Total Distance: {distance} meters</p>
-          </>
-        ) : (
-          <p>No path found.</p>
-        )}
+            {isPopupOpen && selectedLocation && (
+              <PopUp
+                location={selectedLocation}
+                onClose={() => setPopUp(false)}
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="w-full text-xl my-auto items-center justify-center lg:w-[400px] lg:h-[500px] p-4 bg-blue-500 text-white rounded-lg ">
+          <h2 className="text-2xl font-semibold">Follow these Directions:</h2>
+
+          <div className="mt-4 mb-4 flex items-center justify-between text-black font-semibold my-2">
+            {" "}
+            <p>Current Location: {path[0]}</p>
+            <p className="ml-2">Destination: {path[path.length - 1]}</p>
+          </div>
+
+          {path.length > 0 ? (
+            <>
+              {path.slice(0, path.length - 1).map((location, index) => (
+                <p key={index}>📍
+                  From {location} move to {path[index + 1]}
+                </p>
+              ))}
+              <p>📍 You have arrived at your destination.</p>
+              
+            </>
+          ) : (
+            <p>📍 You are at your destination {}</p>
+          )}
+        </div>
       </div>
       <AddDelete
         newLocation={newLocation}

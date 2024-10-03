@@ -20,9 +20,9 @@ const AddDelete: React.FC<LocationFormProps> = ({ newLocation, setNewLocation, a
   const [locationToDelete, setLocationToDelete] = useState<string>('');
 
   return (
-    <div className="flex flex-row mt-4">
+    <div className="flex flex-col lg:flex-row mt-4">
       {/* Add Location Form */}
-      <form onSubmit={addLocation} className="p-4 bg-white rounded shadow space-y-4">
+      <form onSubmit={addLocation} className="mb-4 mr-4 mx-auto p-4 bg-white rounded shadow">
         <h2 className="text-lg font-semibold">Add Location</h2>
         <input
           type="text"
@@ -65,7 +65,7 @@ const AddDelete: React.FC<LocationFormProps> = ({ newLocation, setNewLocation, a
       </form>
 
       {/* Dropdown for selecting location to delete */}
-      <div className="mt-4 p-4 bg-white rounded shadow space-y-4">
+      <div className="mt-4 mb-4 p-4 bg-white rounded shadow space-y-4">
         <h2 className="text-lg font-semibold">Delete Location</h2>
         <select
           value={locationToDelete}

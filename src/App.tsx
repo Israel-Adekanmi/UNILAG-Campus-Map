@@ -125,6 +125,16 @@ const App: React.FC = () => {
           <Map locations={unilaglocations} selectedPath={route.path} path={route.path} distance={route.distance} />
         )}
       </div>
+      <footer className="w-full bg-blue-900 text-white py-4">
+      <div className="container mx-auto text-center">
+        <p className="text-lg font-semibold">
+          Developed by <span className="font-bold">Kdee</span> and <span className="font-bold">IzzyEngine</span>
+        </p>
+        <p className="mt-2 text-sm opacity-70">
+          © {new Date().getFullYear()} All rights reserved.
+        </p>
+      </div>
+    </footer>
     </div>
   );
 };
